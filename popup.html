@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Review Assistant</title>
+  <!-- Fuentes de Google e Iconos -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <!-- Hoja de Estilo Local -->
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <!-- Header Superior -->
+  <header>
+    <h1>Review Assistant</h1>
+  </header>
+  <!-- Barra de Navegación Superior -->
+  <nav class="nav-bar">
+    <button class="nav-item activa" id="pestana-estado">Estado</button>
+    <button class="nav-item" id="pestana-reglas">Reglas</button>
+    <button class="nav-item" id="pestana-config">Ajustes</button>
+  </nav>
+
+  <!-- Contenido Principal -->
+  <main>
+    <!-- Alerta si falta el almacenamiento -->
+    <div id="alerta-storage" style="display:none; background-color:#fff4ce; color:#7a5300; padding:10px; font-size:11px; text-align:center; border-bottom:1px solid #f2e3c6; border-radius: 8px;">
+      ⚠️ Por favor, recarga la extensión en <strong>chrome://extensions</strong> para activar el almacenamiento.
+    </div>
+
+    <!-- Pantalla Error si no se detecta Outlook -->
+    <div id="pantalla-error" class="pantalla-error">
+      Por favor, abre la pestaña de Outlook Web para validar.
+    </div>
+
+    <!-- SECCIÓN 1: ESTADO -->
+    <div id="seccion-estado" class="seccion-contenido activa">
+      <!-- Bento Card: Destinatarios en Cc -->
+      <div class="bento-card" id="card-cc">
+        <div class="icono-circulo error" id="circulo-cc">
+          <span class="material-symbols-outlined" id="icono-cc">close</span>
+        </div>
+        <div class="contenido">
+          <h4 class="titulo">Destinatarios en Cc</h4>
+          <p class="detalle" id="detalle-cc">Cargando verificación...</p>
+        </div>
+        <button id="btn-corregir-cc" class="secundario">Ver Reglas</button>
+      </div>
+
+      <!-- Bento Card: Asunto -->
+      <div class="bento-card" id="card-asunto">
+        <div class="icono-circulo error" id="circulo-asunto">
+          <span class="material-symbols-outlined" id="icono-asunto">close</span>
+        </div>
+        <div class="contenido">
+          <h4 class="titulo">Asunto del Correo</h4>
+          <p class="detalle" id="detalle-asunto">Cargando verificación...</p>
+        </div>
+        <button id="btn-ver-reglas" class="secundario">Ver Reglas</button>
+      </div>
+
+      <!-- Bento Card: Adjuntos -->
+      <div class="bento-card" id="card-adjuntos">
+        <div class="icono-circulo success" id="circulo-adjuntos">
+          <span class="material-symbols-outlined" id="icono-adjuntos">check</span>
+        </div>
+        <div class="contenido">
+          <h4 class="titulo">Archivos Adjuntos</h4>
+          <p class="detalle" id="detalle-adjuntos">Cargando verificación...</p>
+        </div>
+        <span class="badge-valido" id="badge-valido-adjuntos">Válido</span>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 2: REGLAS -->
+    <div id="seccion-reglas" class="seccion-contenido">
+      <div class="tabla-contenedor">
+        <div class="tabla-header">
+          <h3>Reglas Activas</h3>
+          <span class="badge-total" id="reglas-total-badge">3 Total</span>
+        </div>
+        
+        <!-- Fila Cc -->
+        <div class="regla-fila">
+          <div class="regla-info">
+            <h4 class="regla-nombre">Correos en Copia</h4>
+            <p class="regla-valores" id="regla-cc-valores">—</p>
+          </div>
+          <span class="badge-estado inactivo" id="regla-cc-badge">Inactivo</span>
+        </div>
+
+        <!-- Fila Asunto -->
+        <div class="regla-fila">
+          <div class="regla-info">
+            <h4 class="regla-nombre">Palabras Clave del Asunto</h4>
+            <p class="regla-valores" id="regla-asunto-valores">—</p>
+          </div>
+          <span class="badge-estado inactivo" id="regla-asunto-badge">Inactivo</span>
+        </div>
+
+        <!-- Fila Adjuntos -->
+        <div class="regla-fila">
+          <div class="regla-info">
+            <h4 class="regla-nombre">Archivos Adjuntos</h4>
+            <p class="regla-valores" id="regla-adjuntos-valores">—</p>
+          </div>
+          <span class="badge-estado inactivo" id="regla-adjuntos-badge">Inactivo</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECCIÓN 3: CONFIGURACIÓN / AJUSTES -->
+    <div id="seccion-config" class="seccion-contenido">
+      <!-- Ajustes Cc -->
+      <section class="ajustes-seccion">
+        <div class="flex-header">
+          <div class="seccion-titulo">
+            <span class="material-symbols-outlined">alternate_email</span>
+            <h2>Correos en Copia</h2>
+          </div>
+          <button class="switch-btn" id="switch-cc">
+            <span class="dot"></span>
+          </button>
+        </div>
+        <div id="grupo-cc-inputs" class="form-grupo">
+          <label class="form-label">Añadir Correo CC</label>
+          <div class="input-grupo">
+            <input type="email" id="input-correo-cc" class="input-text" placeholder="Ej: supervisor@ajg.com">
+            <button id="btn-agregar-cc" class="btn-add">
+              <span class="material-symbols-outlined">add</span>
+            </button>
+          </div>
+          <div id="lista-correos-cc" class="cc-tags-container"></div>
+        </div>
+      </section>
+
+      <hr style="border: 0; border-top: 1px solid var(--outline-variant); margin: 16px 0;">
+
+      <!-- Ajustes Asunto -->
+      <section class="ajustes-seccion">
+        <div class="flex-header">
+          <div class="seccion-titulo">
+            <span class="material-symbols-outlined">key</span>
+            <h2>Palabras Clave del Asunto</h2>
+          </div>
+          <button class="switch-btn" id="switch-asunto">
+            <span class="dot"></span>
+          </button>
+        </div>
+        <div id="grupo-asunto-inputs" class="form-grupo">
+          <label class="form-label">Añadir Palabra Clave</label>
+          <div class="input-grupo">
+            <input type="text" id="input-palabra-asunto" class="input-text" placeholder="Ej: Urgente">
+            <button id="btn-agregar-asunto" class="btn-add">
+              <span class="material-symbols-outlined">add</span>
+            </button>
+          </div>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 11px; margin-top: 8px; color: var(--on-surface-variant);">
+            <input type="checkbox" id="chk-asunto-regex"> Es expresión regular (Regex)
+          </label>
+          <div id="lista-palabras-asunto" class="kw-lista"></div>
+        </div>
+      </section>
+
+      <hr style="border: 0; border-top: 1px solid var(--outline-variant); margin: 16px 0;">
+
+      <!-- Ajustes Adjuntos -->
+      <section class="ajustes-seccion">
+        <div class="flex-header">
+          <div class="seccion-titulo">
+            <span class="material-symbols-outlined">attach_file</span>
+            <h2>Archivos Adjuntos</h2>
+          </div>
+          <button class="switch-btn" id="switch-adjuntos">
+            <span class="dot"></span>
+          </button>
+        </div>
+        <div id="grupo-adjuntos-inputs" class="selector-adjuntos">
+          <button id="btn-adjuntos-requerido" class="seleccionado">Requerido</button>
+          <button id="btn-adjuntos-prohibido">No permitido</button>
+        </div>
+      </section>
+
+      <!-- Botón de Restablecer -->
+      <button id="btn-restablecer" class="btn-reset">
+        <span class="material-symbols-outlined">restart_alt</span>
+        Restablecer por Defecto
+      </button>
+    </div>
+  </main>
+
+
+  <script src="popup.js"></script>
+</body>
+</html>

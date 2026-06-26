@@ -1,0 +1,30 @@
+{
+  "manifest_version": 3,
+  "name": "Asistente de Correo Outlook",
+  "version": "1.0",
+  "description": "Verifica requisitos antes de enviar correos en Outlook.",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://outlook.live.com/*",
+        "https://outlook.office.com/*",
+        "https://outlook.office365.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["configuracion.json"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

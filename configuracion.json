@@ -1,0 +1,15 @@
+{
+  "validar_cc": true,
+  "correos_cc": [
+    "registro@ajg.com"
+  ],
+  "validar_asunto": true,
+  "palabras_asunto": [
+    {
+      "valor": "REGISTRO",
+      "es_regex": false
+    }
+  ],
+  "validar_adjuntos": true,
+  "modo_adjuntos": "requerido"
+}

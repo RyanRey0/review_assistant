@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es" style=""><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Gallagher Review Assistant - Ajustes</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-bright": "#fbf9f8",
+                    "surface-dim": "#dbdad9",
+                    "secondary-fixed-dim": "#a6cbeb",
+                    "secondary": "#3d627e",
+                    "tertiary-fixed": "#dee3e7",
+                    "tertiary-fixed-dim": "#c2c7cb",
+                    "error-container": "#ffdad6",
+                    "surface-container-low": "#f5f3f3",
+                    "primary": "#000000",
+                    "on-error-container": "#93000a",
+                    "on-secondary": "#ffffff",
+                    "on-primary": "#ffffff",
+                    "primary-fixed-dim": "#c6c6c6",
+                    "tertiary": "#000000",
+                    "on-secondary-fixed": "#001e30",
+                    "surface-container-high": "#e9e8e7",
+                    "on-primary-container": "#848484",
+                    "primary-fixed": "#e2e2e2",
+                    "on-tertiary-container": "#7f8588",
+                    "error": "#ba1a1a",
+                    "on-secondary-container": "#3c617d",
+                    "inverse-primary": "#c6c6c6",
+                    "surface-variant": "#e4e2e2",
+                    "secondary-fixed": "#cbe6ff",
+                    "on-tertiary-fixed": "#171c1f",
+                    "on-surface-variant": "#4c4546",
+                    "surface-container-highest": "#e4e2e2",
+                    "background": "#fbf9f8",
+                    "on-surface": "#1b1c1c",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-fixed-variant": "#474747",
+                    "on-tertiary-fixed-variant": "#42484b",
+                    "inverse-surface": "#303031",
+                    "surface-container": "#efeded",
+                    "outline-variant": "#cfc4c5",
+                    "on-error": "#ffffff",
+                    "surface-tint": "#5e5e5e",
+                    "primary-container": "#1b1b1b",
+                    "on-primary-fixed": "#1b1b1b",
+                    "inverse-on-surface": "#f2f0f0",
+                    "surface": "#fbf9f8",
+                    "on-tertiary": "#ffffff",
+                    "on-secondary-fixed-variant": "#244a65",
+                    "outline": "#7e7576",
+                    "on-background": "#1b1c1c",
+                    "secondary-container": "#b6dcfd",
+                    "tertiary-container": "#171c1f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "unit": "4px",
+                    "stack-md": "16px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "48px",
+                    "stack-sm": "8px",
+                    "stack-lg": "32px",
+                    "gutter": "24px"
+            },
+            "fontFamily": {
+                    "body-md": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "label-lg": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "label-md": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-sm": ["Inter"]
+            },
+            "fontSize": {
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "letterSpacing": "0", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #fbf9f8;
+            color: #1b1c1c;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .toggle-switch {
+            @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-secondary focus:ring-offset-2;
+        }
+        .toggle-dot {
+            @apply inline-block h-4 w-4 transform rounded-full bg-white transition-transform;
+        }
+    </style>
+</head>
+<body class="bg-surface flex flex-col min-h-screen">
+<!-- Top Header -->
+<header class="sticky top-0 z-10 bg-surface border-b border-outline-variant px-margin-mobile py-4 flex items-center justify-between">
+<h1 class="text-headline-sm text-on-surface"></h1><h1 class="font-headline-sm text-headline-sm font-bold text-primary dark:text-on-primary" style="--tw-border-spacing-y: 0; --tw-translate-x: 0; --tw-translate-y: 0; --tw-rotate: 0; --tw-skew-x: 0; --tw-skew-y: 0; --tw-scale-x: 1; --tw-scale-y: 1; --tw-pan-x: ; --tw-pan-y: ; --tw-pinch-zoom: ; --tw-scroll-snap-strictness: proximity; --tw-gradient-from-position: ; --tw-gradient-via-position: ; --tw-gradient-to-position: ; --tw-ordinal: ; --tw-slashed-zero: ; --tw-numeric-figure: ; --tw-numeric-spacing: ; --tw-numeric-fraction: ; --tw-ring-inset: ; --tw-ring-offset-width: 0px; --tw-ring-offset-color: #fff; --tw-ring-color: rgb(59 130 246 / 0.5); --tw-ring-offset-shadow: 0 0 #0000; --tw-ring-shadow: 0 0 #0000; --tw-shadow: 0 0 #0000; --tw-shadow-colored: 0 0 #0000; --tw-blur: ; --tw-brightness: ; --tw-contrast: ; --tw-grayscale: ; --tw-hue-rotate: ; --tw-invert: ; --tw-saturate: ; --tw-sepia: ; --tw-drop-shadow: ; --tw-backdrop-blur: ; --tw-backdrop-brightness: ; --tw-backdrop-contrast: ; --tw-backdrop-grayscale: ; --tw-backdrop-hue-rotate: ; --tw-backdrop-invert: ; --tw-backdrop-opacity: ; --tw-backdrop-saturate: ; --tw-backdrop-sepia: ; --tw-contain-size: ; --tw-contain-layout: ; --tw-contain-paint: ; --tw-contain-style: ; font-family: Inter; letter-spacing: normal; --tw-text-opacity: 1; color: rgb(0, 0, 0); outline: none !important; box-shadow: none !important;">Review Assistant</h1>
+<button class="text-on-surface-variant">
+</button>
+</header>
+<main class="flex-grow px-margin-mobile pb-32 space-y-stack-md py-stack-md">
+<!-- Notificaciones Automáticas Section -->
+<section class="space-y-stack-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">alternate_email</span>
+<h2 class="text-label-lg text-on-surface">Correos en Copia</h2>
+</div>
+<!-- Toggle aligned right -->
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-secondary">
+<span class="translate-x-6 inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
+</button>
+</div>
+<!-- Spaced-out vertical flow for inputs -->
+<div class="space-y-4 pt-2">
+<div>
+<label class="block text-label-md text-on-surface-variant mb-1">Añadir Correo CC</label>
+<div class="flex gap-2">
+<input class="flex-grow border-outline-variant rounded-lg p-3 text-body-sm focus:ring-secondary focus:border-secondary" placeholder="Ej: supervisor@ajg.com" type="text"/>
+<button class="bg-primary text-on-primary px-4 rounded-lg">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="inline-flex items-center gap-1 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-md">
+                        supervisor@ajg.com <span class="material-symbols-outlined text-[16px] cursor-pointer">delete</span>
+</span>
+<span class="inline-flex items-center gap-1 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-label-md">
+                        compliance@ajg.com <span class="material-symbols-outlined text-[16px] cursor-pointer">delete</span>
+</span>
+</div>
+</div>
+</section>
+<hr class="border-outline-variant"/>
+<!-- Palabras Clave Section -->
+<section class="space-y-stack-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">key</span>
+<h2 class="text-label-lg text-on-surface">Palabras Clave del Asunto</h2>
+</div>
+<!-- Toggle aligned right -->
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-secondary">
+<span class="translate-x-6 inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
+</button>
+</div>
+<!-- Linear, spaced-out vertical flow for keywords -->
+<div class="space-y-4 pt-2">
+<div>
+<label class="block text-label-md text-on-surface-variant mb-1">Añadir Palabra Clave</label>
+<div class="flex gap-2">
+<input class="flex-grow border-outline-variant rounded-lg p-3 text-body-sm focus:ring-secondary focus:border-secondary" placeholder="Ej: Urgente" type="text"/>
+<button class="bg-primary text-on-primary px-4 rounded-lg">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between bg-surface-container rounded-lg py-2">
+<span class="text-body-sm text-on-surface">Reclamación</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">delete</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container rounded-lg py-2">
+<span class="text-body-sm text-on-surface">Legal</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">delete</span>
+</div>
+<div class="flex items-center justify-between bg-surface-container rounded-lg py-2">
+<span class="text-body-sm text-on-surface">Incumplimiento</span>
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer">delete</span>
+</div>
+</div>
+</div>
+</section>
+<hr class="border-outline-variant"/>
+<!-- Resumen Diario Section -->
+<hr class="border-outline-variant"/>
+<section class="space-y-stack-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary">attach_file</span>
+<h2 class="text-label-lg text-on-surface">Archivos Adjuntos</h2>
+</div>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-surface-container-highest">
+<span class="translate-x-1 inline-block h-4 w-4 transform rounded-full bg-white transition-transform"></span>
+</button>
+</div>
+<div class="flex bg-surface-container rounded-lg p-1 mt-4"><button class="flex-grow py-2 text-label-md rounded-md bg-surface-container-lowest text-secondary shadow-sm">Requerido</button><button class="flex-grow py-2 text-label-md text-on-surface-variant">No permitido</button></div>
+</section>
+<!-- Save Button -->
+<div class="pt-stack-lg"><button class="w-full py-3 border border-outline text-secondary rounded-lg font-bold text-label-lg flex items-center justify-center gap-2 hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined">restart_alt</span>Restablecer por Defecto</button></div>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-surface-container-lowest border-t border-outline-variant flex justify-around items-center py-3 px-2 z-20">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined">home</span>
+<span class="text-label-md">Inicio</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-on-surface-variant"><span class="material-symbols-outlined">rule</span><span class="text-label-md">Reglas</span></button>
+<button class="flex flex-col items-center gap-1 text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+<span class="text-label-md">Ajustes</span>
+</button>
+</nav>
+</body></html>
