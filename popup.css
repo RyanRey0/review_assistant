@@ -319,6 +319,22 @@ section.ajustes-seccion {
 .input-text:focus {
   border-color: var(--secondary);
 }
+.input-select {
+  width: 100%;
+  border: 1px solid var(--outline-variant);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  outline: none;
+  background-color: var(--surface-container-lowest);
+  color: var(--on-surface);
+  transition: border-color 0.2s;
+  cursor: pointer;
+  font-family: inherit;
+}
+.input-select:focus {
+  border-color: var(--secondary);
+}
 .btn-add {
   background-color: var(--primary);
   color: var(--on-primary);

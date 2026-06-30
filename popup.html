@@ -112,6 +112,29 @@
 
     <!-- SECCIÓN 3: CONFIGURACIÓN / AJUSTES -->
     <div id="seccion-config" class="seccion-contenido">
+      <!-- Ajustes Disparador -->
+      <section class="ajustes-seccion">
+        <div class="flex-header">
+          <div class="seccion-titulo">
+            <span class="material-symbols-outlined">bolt</span>
+            <h2>Disparador de Validación</h2>
+          </div>
+        </div>
+        <div class="form-grupo">
+          <label class="form-label" for="select-disparador">Activar validaciones cuando:</label>
+          <div class="input-grupo">
+            <select id="select-disparador" class="input-select">
+              <option value="todos">Validar todos los correos</option>
+              <option value="asunto">Asunto contiene palabras clave</option>
+              <option value="cc">Cc contiene correos requeridos</option>
+              <option value="adjuntos">Tiene archivos adjuntos</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <hr style="border: 0; border-top: 1px solid var(--outline-variant); margin: 16px 0;">
+
       <!-- Ajustes Cc -->
       <section class="ajustes-seccion">
         <div class="flex-header">

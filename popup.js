@@ -17,7 +17,8 @@ function obtener_valores_predeterminados(callback) {
         validar_asunto: true,
         palabras_asunto: [{ valor: "REGISTRO", es_regex: false }],
         validar_adjuntos: true,
-        modo_adjuntos: "requerido"
+        modo_adjuntos: "requerido",
+        disparador: "todos"
       });
     });
 }
@@ -98,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const lista_palabras_asunto = document.getElementById("lista-palabras-asunto");
 
   const btn_restablecer = document.getElementById("btn-restablecer");
+  const select_disparador = document.getElementById("select-disparador");
 
   // Textos y badges de las reglas
   const regla_cc_badge = document.getElementById("regla-cc-badge");
@@ -129,6 +131,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const pantalla_error = document.getElementById("pantalla-error");
 
+  let intervalo_actualizacion = null;
+
   // Configuracion activa en memoria
   let config_actual = {
     validar_cc: true,
@@ -136,22 +140,40 @@ document.addEventListener("DOMContentLoaded", () => {
     validar_asunto: true,
     palabras_asunto: [],
     validar_adjuntos: true,
-    modo_adjuntos: "requerido"
+    modo_adjuntos: "requerido",
+    disparador: "todos"
   };
+
+  // Inicia la actualización del estado cada 1.5 segundos
+  function iniciar_actualizacion_automatica() {
+    parar_actualizacion_automatica();
+    actualizar_estado_validacion();
+    intervalo_actualizacion = setInterval(actualizar_estado_validacion, 1500);
+  }
+
+  // Detiene la actualización periódica del estado
+  function parar_actualizacion_automatica() {
+    if (intervalo_actualizacion) {
+      clearInterval(intervalo_actualizacion);
+      intervalo_actualizacion = null;
+    }
+  }
 
   // Escuchadores de clics para cambiar pestanas
   pestana_estado.addEventListener("click", () => {
     activar_pestana(pestana_estado, seccion_estado);
-    actualizar_estado_validacion();
+    iniciar_actualizacion_automatica();
   });
 
   pestana_reglas.addEventListener("click", () => {
     activar_pestana(pestana_reglas, seccion_reglas);
+    parar_actualizacion_automatica();
     renderizar_resumen_reglas();
   });
 
   pestana_config.addEventListener("click", () => {
     activar_pestana(pestana_config, seccion_config);
+    parar_actualizacion_automatica();
   });
 
   // Alterna las vistas activas
@@ -244,6 +266,8 @@ document.addEventListener("DOMContentLoaded", () => {
       btn_adjuntos_requerido.classList.add("seleccionado");
       btn_adjuntos_prohibido.classList.remove("seleccionado");
     }
+
+    select_disparador.value = config_actual.disparador || "todos";
 
     renderizar_lista_cc();
     renderizar_lista_asunto();
@@ -435,6 +459,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Escuchar cambios en el selector de disparador
+  select_disparador.addEventListener("change", () => {
+    config_actual.disparador = select_disparador.value;
+    guardar_configuracion();
+    actualizar_estado_validacion();
+  });
+
   // Restablecer valores de fábrica
   btn_restablecer.addEventListener("click", () => {
     obtener_valores_predeterminados((predeterminados) => {
@@ -564,4 +595,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Inicializacion del popup
   cargar_configuracion();
+  iniciar_actualizacion_automatica();
 });

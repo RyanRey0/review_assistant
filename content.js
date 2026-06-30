@@ -4,7 +4,8 @@ let valores_defecto = {
   correos_cc: ["registro@empresa.com"],
   validar_asunto: true,
   palabras_asunto: [{ valor: "REGISTRO", es_regex: false }],
-  validar_adjuntos: true
+  validar_adjuntos: true,
+  disparador: "todos"
 };
 
 // Estado local de la configuración
@@ -58,6 +59,66 @@ function inicializar_configuracion() {
   }
 }
 
+// Normalizar el texto para una comparacion limpia
+function normalizar_texto(texto) {
+  if (!texto) return "";
+  let normal = texto.toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, ""); // Quitar acentos
+  return normal.replace(/[^a-z0-9]/g, ""); // Quitar espacios y caracteres especiales
+}
+
+// Comprobar si un destinatario coincide con el correo requerido
+function coincide_destinatario(cc_item, correo_req) {
+  const req_limpio = correo_req.toLowerCase().trim();
+  const local_req = req_limpio.split("@")[0];
+
+  const item_limpio = cc_item.toLowerCase().trim();
+  const local_item = item_limpio.includes("@") ? item_limpio.split("@")[0] : item_limpio;
+
+  const req_norm = normalizar_texto(req_limpio);
+  const local_req_norm = normalizar_texto(local_req);
+  const item_norm = normalizar_texto(item_limpio);
+  const local_item_norm = normalizar_texto(local_item);
+
+  return item_limpio === req_limpio || 
+         item_limpio.includes(req_limpio) || 
+         item_norm === req_norm ||
+         local_item_norm === local_req_norm ||
+         item_norm.includes(local_req_norm) ||
+         local_req_norm.includes(item_norm);
+}
+
+// Obtener el contenedor del panel de redacción activo
+function obtener_contenedor_redaccion(elemento_origen) {
+  if (!elemento_origen) {
+    // Buscar el boton de enviar
+    const boton_enviar = obtener_botón_enviar();
+    return boton_enviar ? obtener_contenedor_redaccion(boton_enviar) : document;
+  }
+
+  // Buscar el formulario de redaccion completo
+  const form_completo = elemento_origen.closest('[data-testid="ComposeForm"], .ComposeCard, [role="region"]');
+  if (form_completo) {
+    return form_completo;
+  }
+
+  // Buscar por ancestro comun
+  let actual = elemento_origen;
+  while (actual && actual !== document.body && actual !== document.documentElement) {
+    // Validar cuerpo y controles de redaccion
+    const tiene_cuerpo = actual.querySelector('div[contenteditable="true"], div[role="textbox"]');
+    const tiene_controles = actual.querySelector('[data-testid="ComposeSendButton"], [id$="_TO"], [aria-label="Para"], [id$="_CC"], [aria-label="CC"]');
+
+    if (tiene_cuerpo && tiene_controles) {
+      return actual;
+    }
+    actual = actual.parentElement;
+  }
+
+  return document;
+}
+
 // Función para buscar el botón de enviar
 function obtener_botón_enviar() {
   // Busca botones con etiquetas comunes en inglés y español
@@ -105,70 +166,141 @@ function obtener_asunto() {
 }
 
 // Función para obtener los correos en Cc
-function obtener_correos_cc() {
+function obtener_correos_cc(contenedor_redaccion = document) {
   const lista_cc = [];
-  const boton_enviar = obtener_botón_enviar();
-  // Busca el contenedor de redaccion activo
-  const contenedor_redaccion = boton_enviar 
-    ? (boton_enviar.closest('.yz4r1') || boton_enviar.closest('.ComposeCard') || boton_enviar.closest('[role="region"]') || document) 
-    : document;
+  let contenedor_real = contenedor_redaccion;
 
-  // Buscar contenedor de CC solo en el panel activo
-  let contenedor_cc = contenedor_redaccion.querySelector('[id$="_CC"], [aria-label="CC"]');
-  if (!contenedor_cc) {
-    contenedor_cc = contenedor_redaccion.querySelector('[aria-label*="Cc" i], [aria-label*="Copia" i]');
+  // Subir por el DOM para buscar destinatarios
+  if (contenedor_redaccion && contenedor_redaccion !== document) {
+    const form_completo = contenedor_redaccion.closest('[data-testid="ComposeForm"], .ComposeCard, [role="region"]');
+    if (form_completo) {
+      contenedor_real = form_completo;
+    } else {
+      let actual = contenedor_redaccion;
+      while (actual && actual !== document.body) {
+        if (actual.querySelector('[id$="_TO"], [aria-label="Para" i], [id$="_CC"], [aria-label="Cc" i]')) {
+          contenedor_real = actual;
+          break;
+        }
+        actual = actual.parentElement;
+      }
+    }
   }
 
-  if (contenedor_cc) {
-    // Buscar destinatarios que tengan formato de correo en atributos o texto
-    const elementos = contenedor_cc.querySelectorAll('span._Entity, [aria-label*="@"], [title*="@"], div, span');
+  // Buscar contenedores de destinatarios específicos (Para, Cc, Cco)
+  const contenedores_destinatarios = contenedor_real.querySelectorAll(
+    '[id$="_TO"], [id$="_CC"], [id$="_BCC"], [aria-label="Para" i], [aria-label="Cc" i], [aria-label="Cco" i], [aria-label="To" i], [aria-label="Bcc" i]'
+  );
+
+  // Si encontramos contenedores específicos, buscar dentro de ellos; si no, en todo el contenedor
+  const buscar_en = contenedores_destinatarios.length > 0 
+    ? Array.from(contenedores_destinatarios) 
+    : [contenedor_real];
+
+  buscar_en.forEach((contenedor) => {
+    // Evitar procesar botones que coincidan por error
+    if (contenedor.tagName.toLowerCase() === 'button') {
+      return;
+    }
+
+    // Buscar destinatarios y sus nombres o direcciones de correo
+    const elementos = contenedor.querySelectorAll('span._Entity, [aria-label*="@"], [title*="@"], span[class*="textContainer-"], span[class*="pill-"]');
     elementos.forEach((el) => {
+      // Guardar el nombre para mostrar si es una píldora de destinatario
+      const es_pildora = el.classList.contains('_Entity') || 
+                        Array.from(el.classList).some(c => c.startsWith('textContainer-') || c.startsWith('pill-'));
+      if (es_pildora) {
+        const nombre = el.textContent.trim().replace(/;$/, '').toLowerCase();
+        if (nombre && !lista_cc.includes(nombre)) {
+          lista_cc.push(nombre);
+        }
+      }
+
       const fuentes = [
         el.getAttribute("aria-label"),
         el.getAttribute("title"),
         el.textContent
       ];
       fuentes.forEach((texto) => {
-        if (texto && texto.includes("@")) {
-          const coincidencias = texto.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
-          if (coincidencias) {
-            coincidencias.forEach((email) => {
-              const email_limpio = email.trim().toLowerCase();
-              if (!lista_cc.includes(email_limpio)) {
-                lista_cc.push(email_limpio);
-              }
-            });
+        if (texto) {
+          if (texto.includes("@")) {
+            const coincidencias = texto.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g);
+            if (coincidencias) {
+              coincidencias.forEach((email) => {
+                const email_limpio = email.trim().toLowerCase();
+                if (!lista_cc.includes(email_limpio)) {
+                  lista_cc.push(email_limpio);
+                }
+              });
+            }
           }
         }
       });
     });
-  }
+  });
+
   return lista_cc;
 }
 
 // Función para comprobar si hay archivos adjuntos
-function tiene_adjuntos() {
-  const boton_enviar = obtener_botón_enviar();
-  // Busca el contenedor de redaccion activo
-  const contenedor_redaccion = boton_enviar 
-    ? (boton_enviar.closest('.yz4r1') || boton_enviar.closest('.ComposeCard') || boton_enviar.closest('[role="region"]') || document) 
-    : document;
-
-  // Buscar elementos de adjuntos solo en el panel activo
-  const adjuntos = contenedor_redaccion.querySelectorAll(
-    '[aria-label*="attachment" i], [aria-label*="adjunto" i], [class*="attachment" i], [class*="adjunto" i], [data-testid*="Attachment" i]'
-  );
-  
+function tiene_adjuntos(contenedor_redaccion = document) {
   let cantidad_adjuntos = 0;
-  adjuntos.forEach((el) => {
-    const es_boton = el.tagName.toLowerCase() === "button" || el.getAttribute("role") === "button";
-    const texto = el.textContent || "";
-    if (!es_boton && texto.trim().length > 0) {
-      cantidad_adjuntos++;
-    } else if (el.getAttribute("data-testid") === "AttachmentCard") {
-      cantidad_adjuntos++;
+  let contenedor_real = contenedor_redaccion;
+
+  // Subir por el DOM para buscar adjuntos
+  if (contenedor_redaccion && contenedor_redaccion !== document) {
+    const form_completo = contenedor_redaccion.closest('[data-testid="ComposeForm"], .ComposeCard, [role="region"]');
+    if (form_completo) {
+      contenedor_real = form_completo;
+    } else {
+      let actual = contenedor_redaccion;
+      while (actual && actual !== document.body) {
+        if (actual.querySelector('[aria-label*="attachment" i], [aria-label*="adjunto" i], [id$="_ATTACHMENTS"]')) {
+          contenedor_real = actual;
+          break;
+        }
+        actual = actual.parentElement;
+      }
     }
+  }
+
+  // Buscar los contenedores de adjuntos en la redacción activa
+  const contenedores_adjuntos = contenedor_real.querySelectorAll(
+    '[aria-label*="attachment" i], [aria-label*="adjunto" i]'
+  );
+
+  // Determinar si hay redacción activa en la página
+  const editor_activo = document.querySelector('div[contenteditable="true"], div[role="textbox"]');
+  const en_modo_redaccion = !!editor_activo;
+
+  contenedores_adjuntos.forEach((cont) => {
+    // Si estamos redactando, ignorar contenedores de lectura anteriores
+    if (en_modo_redaccion) {
+      const es_lectura = cont.closest('.SlLx9, [aria-label="Mensaje de correo electrónico" i]');
+      if (es_lectura) {
+        return;
+      }
+    }
+    // Contar las opciones o tarjetas de adjuntos individuales
+    const archivos = cont.querySelectorAll('[role="option"], [data-testid="AttachmentCard"]');
+    cantidad_adjuntos += archivos.length;
   });
+
+  // Respaldo por si cambió la estructura de adjuntos
+  if (cantidad_adjuntos === 0) {
+    const adjuntos_genericos = contenedor_real.querySelectorAll(
+      '[data-testid="AttachmentCard"], [class*="AttachmentCard" i]'
+    );
+    adjuntos_genericos.forEach((el) => {
+      if (en_modo_redaccion) {
+        const es_lectura = el.closest('.SlLx9, [aria-label="Mensaje de correo electrónico" i]');
+        if (es_lectura) {
+          return;
+        }
+      }
+      cantidad_adjuntos++;
+    });
+  }
   
   return cantidad_adjuntos > 0;
 }
@@ -238,14 +370,51 @@ function mostrar_alerta(errores) {
 
 // Función principal para validar el correo
 function validar_correo(evento) {
+  // Obtener el contenedor del correo que se está redactando
+  const elemento_origen = evento ? evento.target : null;
+  const contenedor_redaccion = obtener_contenedor_redaccion(elemento_origen);
+
+  // Comprobar si el correo actual cumple con el disparador seleccionado
+  let se_debe_validar = false;
+  const disparador = config_actual.disparador || "todos";
+
+  if (disparador === "todos") {
+    se_debe_validar = true;
+  } else if (disparador === "asunto") {
+    const texto_asunto = obtener_asunto();
+    se_debe_validar = config_actual.palabras_asunto.some((item) => {
+      if (item.es_regex) {
+        try {
+          return new RegExp(item.valor, "i").test(texto_asunto);
+        } catch (error) {
+          // Ignorar expresiones no válidas
+          return false;
+        }
+      }
+      return texto_asunto.toLowerCase().includes(item.valor.toLowerCase());
+    });
+  } else if (disparador === "cc") {
+    const correos_en_cc = obtener_correos_cc(contenedor_redaccion);
+    se_debe_validar = config_actual.correos_cc.some((correo_req) => {
+      return correos_en_cc.some((cc_item) => coincide_destinatario(cc_item, correo_req));
+    });
+  } else if (disparador === "adjuntos") {
+    se_debe_validar = tiene_adjuntos(contenedor_redaccion);
+  }
+
+  // Si no cumple la condicion del disparador se envia directamente
+  if (!se_debe_validar) {
+    return true;
+  }
+
   const lista_errores = [];
 
   // 1. Validar Cc si está habilitado
   if (config_actual.validar_cc) {
-    const correos_en_cc = obtener_correos_cc();
-    const faltan_correos = config_actual.correos_cc.filter(
-      (correo) => !correos_en_cc.includes(correo.toLowerCase())
-    );
+    const correos_en_cc = obtener_correos_cc(contenedor_redaccion);
+    const faltan_correos = config_actual.correos_cc.filter((correo_req) => {
+      return !correos_en_cc.some((cc_item) => coincide_destinatario(cc_item, correo_req));
+    });
     if (faltan_correos.length > 0) {
       lista_errores.push(`Faltan correos requeridos en Cc: ${faltan_correos.join(", ")}`);
     }
@@ -281,9 +450,9 @@ function validar_correo(evento) {
   // 3. Validar Adjuntos si está habilitado
   if (config_actual.validar_adjuntos) {
     const modo_adjuntos = config_actual.modo_adjuntos || "requerido";
-    if (modo_adjuntos === "requerido" && !tiene_adjuntos()) {
+    if (modo_adjuntos === "requerido" && !tiene_adjuntos(contenedor_redaccion)) {
       lista_errores.push("Falta agregar archivos adjuntos");
-    } else if (modo_adjuntos === "no_permitido" && tiene_adjuntos()) {
+    } else if (modo_adjuntos === "no_permitido" && tiene_adjuntos(contenedor_redaccion)) {
       lista_errores.push("No se permiten archivos adjuntos");
     }
   }
@@ -340,12 +509,14 @@ chrome.runtime.onMessage.addListener((mensaje, remitente, responder_estado) => {
 
   if (mensaje.accion === "obtener_estado") {
     const texto_asunto = obtener_asunto();
-    const correos_en_cc = obtener_correos_cc();
+    const boton_enviar = obtener_botón_enviar();
+    const contenedor_redaccion = obtener_contenedor_redaccion(boton_enviar);
+    const correos_en_cc = obtener_correos_cc(contenedor_redaccion);
     
-    // Verificar cuáles correos faltan en Cc
-    const faltan_correos = config_actual.correos_cc.filter(
-      (correo) => !correos_en_cc.includes(correo.toLowerCase())
-    );
+    // Verificar cuáles correos faltan en Cc usando coincidencia inteligente
+    const faltan_correos = config_actual.correos_cc.filter((correo_req) => {
+      return !correos_en_cc.some((cc_item) => coincide_destinatario(cc_item, correo_req));
+    });
 
     // Verificar si el asunto cumple con las palabras clave o expresiones regulares
     let asunto_correcto = true;
@@ -372,9 +543,9 @@ chrome.runtime.onMessage.addListener((mensaje, remitente, responder_estado) => {
     let adjuntos_correcto = true;
     if (config_actual.validar_adjuntos) {
       if (modo_adjuntos === "requerido") {
-        adjuntos_correcto = tiene_adjuntos();
+        adjuntos_correcto = tiene_adjuntos(contenedor_redaccion);
       } else if (modo_adjuntos === "no_permitido") {
-        adjuntos_correcto = !tiene_adjuntos();
+        adjuntos_correcto = !tiene_adjuntos(contenedor_redaccion);
       }
     }
     responder_estado({

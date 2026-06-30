@@ -11,5 +11,6 @@
     }
   ],
   "validar_adjuntos": true,
-  "modo_adjuntos": "requerido"
+  "modo_adjuntos": "requerido",
+  "disparador": "todos"
 }
